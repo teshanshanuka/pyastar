@@ -19,3 +19,6 @@ path = pyastar.astar_path(weights, start, goal, allow_diagonal=True)
 # The path is returned as a numpy array of (i, j) coordinates.
 print(f"Shortest path from {start} to {goal} found:")
 print(path)
+
+print("Reduced path")
+print(pyastar.reduce_path(path))

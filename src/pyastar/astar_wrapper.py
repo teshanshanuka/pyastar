@@ -3,7 +3,6 @@ import numpy as np
 import pyastar.astar
 from typing import Optional, Tuple, Union
 
-
 # Define array types
 ndmat_f_type = np.ctypeslib.ndpointer(
     dtype=np.float32, ndim=1, flags="C_CONTIGUOUS")
@@ -15,11 +14,11 @@ ndmat_i2_type = np.ctypeslib.ndpointer(
 # Define input/output types
 pyastar.astar.restype = ndmat_i2_type  # Nx2 (i, j) coordinates or None
 pyastar.astar.argtypes = [
-    ndmat_f_type,   # weights
-    ctypes.c_int,   # height
-    ctypes.c_int,   # width
-    ctypes.c_int,   # start index in flattened grid
-    ctypes.c_int,   # goal index in flattened grid
+    ndmat_f_type,  # weights
+    ctypes.c_int,  # height
+    ctypes.c_int,  # width
+    ctypes.c_int,  # start index in flattened grid
+    ctypes.c_int,  # goal index in flattened grid
     ctypes.c_bool,  # allow diagonal
 ]
 
@@ -52,3 +51,15 @@ def astar_path(
         weights.flatten(), height, width, start_idx, goal_idx, allow_diagonal,
     )
     return path
+
+
+def reduce_path(path: np.ndarray) -> np.ndarray:
+    """Remove intermediate steps in steps towards the same direction to shortens the path array"""
+    diff = np.diff(path, axis=0)
+    mask = np.where((diff != (0, 0)).any(axis=1))[0]
+
+    _path = np.concatenate([path[mask], [path[-1]]])
+    d_diff = np.diff(np.diff(_path, axis=0), axis=0)
+    mask = np.where((d_diff != (0, 0)).any(axis=1))[0] + 1
+
+    return np.concatenate([[_path[0]], _path[mask], [_path[-1]]])
